@@ -1,0 +1,66 @@
+# .github/workflows/nightly-nuke.yaml
+name: Hetzner nightly nuke
+
+on:
+  schedule:
+    - cron: "0 18 * * *"   # UTC ! 18h UTC = 20h Paris en été, 19h en hiver
+  workflow_dispatch: {}     # déclenchement manuel — indispensable pour tester
+
+concurrency:
+  group: hetzner-nuke
+  cancel-in-progress: false  # jamais deux nukes entrelacés
+
+jobs:
+  destroy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: opentofu/setup-opentofu@v1
+
+      - name: Tofu destroy
+        id: destroy
+        continue-on-error: true    # le nuke doit tourner même si le destroy échoue
+        working-directory: tofu
+        env:
+          HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN_LAB }}
+        run: |
+          set -euo pipefail
+          tofu init \
+            -backend-config="access_key=${{ secrets.OVH_S3_ACCESS_KEY }}" \
+            -backend-config="secret_key=${{ secrets.OVH_S3_SECRET_KEY }}"
+          tofu destroy -auto-approve -var="hcloud_token=$HCLOUD_TOKEN"
+
+      - name: Install hetzner-nuke
+        run: |
+          go install github.com/cgroschupp/hetzner-nuke@latest
+          echo "$HOME/go/bin" >> "$GITHUB_PATH"
+
+      - name: Nuke (filet de sécurité)
+        env:
+          HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN_LAB }}
+        run: |
+          hetzner-nuke run \
+            --config .github/nuke-config.yaml \
+            --no-dry-run --force
+
+      - name: Verify empty
+        env:
+          HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN_LAB }}
+        run: |
+          set -euo pipefail
+          curl -sL https://github.com/hetznercloud/cli/releases/latest/download/hcloud-linux-amd64.tar.gz \
+            | tar xz hcloud
+          remaining=$(./hcloud server list -o noheader | wc -l)
+          if [ "$remaining" -ne 0 ]; then
+            echo "::error::$remaining serveurs survivants"
+            exit 1
+          fi
+
+      - name: Notify on failure
+        if: failure() || steps.destroy.outcome == 'failure'
+        run: |
+          curl -s -H "Title: Hetzner nuke — problème" \
+            -d "Run ${{ github.run_id }}: destroy=${{ steps.destroy.outcome }}, job=${{ job.status }}. Vérifier la console Hetzner." \
+            https://ntfy.sh/ton-topic-prive
