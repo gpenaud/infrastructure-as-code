@@ -22,7 +22,7 @@ jobs:
       - name: Tofu destroy
         id: destroy
         continue-on-error: true    # le nuke doit tourner même si le destroy échoue
-        working-directory: tofu
+        working-directory: infrastructure/infra02
         env:
           HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN_LAB }}
         run: |
