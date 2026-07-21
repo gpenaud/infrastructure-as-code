@@ -1,0 +1,14 @@
+# Copie ce fichier en terraform.tfvars (gitignored) et remplis les valeurs
+
+# Credentials API OVH (à générer sur https://api.ovh.com/createToken)
+ovh_application_key    = "xxxxxxxxxxxxxxxx"
+ovh_application_secret = "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy"
+ovh_consumer_key       = "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz"
+
+# ID du Public Cloud Project OVH
+ovh_service_name = "abcd1234efgh5678"  # le project_id OVH
+
+# Credentials d'un user S3 existant (pour bootstrapper la création des buckets)
+# Tu peux récupérer celles de ton user actuel utilisé pour aws-cli
+bootstrap_access_key = "AAAAAAAAAAAAAAAAAAAAAAAA"
+bootstrap_secret_key = "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"
