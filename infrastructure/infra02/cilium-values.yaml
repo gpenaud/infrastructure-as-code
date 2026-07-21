@@ -1,0 +1,55 @@
+# Cilium MINIMAL pour bootstrap Talos
+# Flux prendra la main ensuite pour activer LB-IPAM, L2, Hubble, etc.
+
+# Talos a besoin de ces réglages spécifiques
+cgroup:
+  autoMount:
+    enabled: false
+  hostRoot: /sys/fs/cgroup
+
+# Talos n'a pas kube-proxy → Cilium doit le remplacer dès le bootstrap
+kubeProxyReplacement: true
+
+# Talos a besoin de cette adresse pour joindre l'API server
+# (à adapter selon ton VIP control-plane ou DNS interne)
+k8sServiceHost: localhost
+k8sServicePort: 7445
+
+# Pool d'IPs pour les pods — choisi pour ne pas collisionner
+# avec le Hetzner Cloud Network (typiquement 10.0.0.0/16)
+ipam:
+  mode: kubernetes
+  operator:
+    clusterPoolIPv4PodCIDRList:
+      - 10.244.0.0/16
+    clusterPoolIPv4MaskSize: 24
+
+routingMode: tunnel
+tunnelProtocol: vxlan
+autoDirectNodeRoutes: false
+
+# Sécurité Talos
+securityContext:
+  capabilities:
+    ciliumAgent:
+      - CHOWN
+      - KILL
+      - NET_ADMIN
+      - NET_RAW
+      - IPC_LOCK
+      - SYS_ADMIN
+      - SYS_RESOURCE
+      - DAC_OVERRIDE
+      - FOWNER
+      - SETGID
+      - SETUID
+    cleanCiliumState:
+      - NET_ADMIN
+      - SYS_ADMIN
+      - SYS_RESOURCE
+
+# Pas de features avancées au bootstrap — Flux les activera
+hubble:
+  enabled: false
+operator:
+  replicas: 1                # passera à 2 quand Flux reprend (HA)
