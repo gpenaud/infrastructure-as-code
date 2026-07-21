@@ -3,7 +3,7 @@ name: Hetzner nightly nuke
 
 on:
   schedule:
-    - cron: "0 18 * * *"   # UTC ! 18h UTC = 20h Paris en été, 19h en hiver
+    - cron: "0 22 * * *"   # UTC ! 18h UTC = 20h Paris en été, 19h en hiver
   workflow_dispatch: {}     # déclenchement manuel — indispensable pour tester
 
 concurrency:
@@ -43,7 +43,7 @@ jobs:
         run: |
           hetzner-nuke run \
             --config .github/nuke-config.yaml \
-            --no-dry-run --force
+            --prompt-delay 3 --no-prompt --no-dry-run
 
       - name: Verify empty
         env:
@@ -63,4 +63,4 @@ jobs:
         run: |
           curl -s -H "Title: Hetzner nuke — problème" \
             -d "Run ${{ github.run_id }}: destroy=${{ steps.destroy.outcome }}, job=${{ job.status }}. Vérifier la console Hetzner." \
-            https://ntfy.sh/ton-topic-prive
+            https://ntfy.sh/alter-it-infra02-nightly-nuke-Mrq2ztHNUvSbTULP
