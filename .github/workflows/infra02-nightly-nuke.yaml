@@ -52,7 +52,7 @@ jobs:
           set -euo pipefail
           curl -sL https://github.com/hetznercloud/cli/releases/latest/download/hcloud-linux-amd64.tar.gz \
             | tar xz hcloud
-          remaining=$(./hcloud server list -o noheader | wc -l)
+          remaining=$(./hcloud server list -o json | jq 'length')
           if [ "$remaining" -ne 0 ]; then
             echo "::error::$remaining serveurs survivants"
             exit 1
