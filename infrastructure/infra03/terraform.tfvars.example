@@ -1,0 +1,29 @@
+# Copier en terraform.tfvars et renseigner. NE PAS COMMITTER terraform.tfvars :
+# il est refusé par .gitignore (règle *.tfvars), à vérifier au moindre doute avec
+#   git check-ignore -v infrastructure/infra03/terraform.tfvars
+#
+# Alternative sans fichier : export TF_VAR_hcloud_token=… etc.
+
+# Jeton API Hetzner Cloud, lecture/écriture, du projet de PRODUCTION.
+# PAS celui du lab (projet 14748868) : il est vidé chaque nuit par le workflow
+# infra02-nightly-nuke.
+hcloud_token = "…"
+
+# API OVH « cloud » : /cloud/* — les mêmes valeurs que
+# infrastructure/s3-buckets/terraform.tfvars (ovh_application_key, …).
+ovh_application_key    = "…"
+ovh_application_secret = "…"
+ovh_consumer_key       = "…"
+ovh_service_name       = "…" # ID du projet Public Cloud
+
+# API OVH « dns » : /domain/zone/*/record* et /refresh, toutes zones. Créer ici :
+#   https://api.ovh.com/createToken/?GET=/domain/zone&GET=/domain/zone/*&GET=/domain/zone/*/record&GET=/domain/zone/*/record/*&POST=/domain/zone/*/record&PUT=/domain/zone/*/record/*&DELETE=/domain/zone/*/record/*&POST=/domain/zone/*/refresh
+ovh_dns_application_key    = "…"
+ovh_dns_application_secret = "…"
+ovh_dns_consumer_key       = "…"
+
+# Clés S3 OVH d un compte qui peut créer des buckets (les « bootstrap_* » de
+# infrastructure/s3-buckets/terraform.tfvars). Servent AUSSI au backend :
+#   tofu init -backend-config="access_key=…" -backend-config="secret_key=…"
+s3_access_key = "…"
+s3_secret_key = "…"

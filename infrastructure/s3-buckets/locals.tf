@@ -50,6 +50,13 @@ locals {
       name            = "alter-it-infra02-platform-mimir-rules"
       expiration_days = 0
     }
+    # State d'infra03 (VPS docker-compose). Même raison qu'infra02 : une racine
+    # ne peut pas gérer le bucket qui porte son propre state.
+    "infra03-tofu-state" = {
+      name            = "alter-it-infra03-tofu-state"
+      expiration_days = 0
+    }
+
     "infra02-tempo-traces" = {
       name            = "alter-it-infra02-platform-tempo-traces"
       expiration_days = 14  # 14j de traces

@@ -1,0 +1,2 @@
+# Le plan sauvegarde entre « tofu plan -out » et « tofu apply » : jetable.
+plan.out
