@@ -57,6 +57,30 @@ contourne ufw pour les ports qu il publie ; la chaîne `DOCKER-USER` posée par
 le playbook rend ces ports à ufw. Pas de pare-feu Hetzner : la cible finale est
 un VPS Hostinger, la protection doit suivre la machine, pas l hébergeur.
 
+## 2 bis. Les comptes
+
+Les humains sont dans `~/work/ansible/playbooks/vars/users.yml` (compte, clé
+publique) et leurs droits par tenant dans `vars/tenants.yml` (`ssh_admins`,
+`ssh_managers`). `deploy-vps.yml` les crée ; relancer le playbook applique
+toute modification, un retrait compris.
+
+| Qui | Ce qu il a |
+|---|---|
+| `operator` | compte de service : Ansible et les piles, clé `~/.ssh/infra03-ansible` seulement |
+| `machine_admins` (gpenaud, mschneider) | sudo, groupe `docker`, donc la machine entière |
+| `ssh_admins` d un tenant (ylagouge sur le-portail) | `tenant-task <tenant> …` et rien d autre |
+
+Le mot de passe sudo d un admin de machine est tiré au premier passage dans
+`~/.config/infra03/password_<compte>` ; il le change ensuite avec `passwd`, le
+playbook n y retouche pas. Un compte sans clé dans `users.yml` est créé mais
+inaccessible, et le playbook le dit.
+
+Pour un admin de tenant, tout est dit dans le README de tenant-infra,
+§ « Par SSH : la même porte » : il n est ni dans `docker` ni dans `sudousers`,
+une règle de `/etc/sudoers.d/tenant-task` lui ouvre le seul programme
+`tenant-task` sur son tenant, et ce programme n accepte que les tâches que le
+`Taskfile` ouvre à son rôle.
+
 ## 3. Les instances
 
 ```sh
