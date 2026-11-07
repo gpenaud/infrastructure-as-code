@@ -43,21 +43,8 @@ variable "ovh_service_name" {
   type        = string
 }
 
-variable "ovh_s3_region" {
-  type    = string
-  default = "sbg"
-}
 
-variable "s3_access_key" {
-  description = "Access key S3 OVH d un compte autorisé à créer des buckets."
-  type        = string
-  sensitive   = true
-}
 
-variable "s3_secret_key" {
-  type      = string
-  sensitive = true
-}
 
 # --- Le serveur ---------------------------------------------------------------
 
@@ -125,26 +112,11 @@ variable "tenants" {
     "le-portail"        = "leportail.org"
     "ferme-du-jointout" = "fermedujointout.fr"
     "jardins-vedas"     = "jardinsvedas.com"
+    # Ajoute le 7 novembre 2026 pour la migration d infra01 : le joker *.staging existait deja, importe.
+    "la-bergeronnette" = "labergeronnette.org"
   }
 }
 
-# --- Sauvegardes --------------------------------------------------------------
+# --- Sauvegardes : le bucket alter-it-backups vit dans infrastructure/backups depuis le 7 novembre 2026 ---
 
-variable "manage_s3" {
-  description = "Gérer le bucket des sauvegardes et son compte. false pour un plan sans clés OVH."
-  type        = bool
-  default     = true
-}
 
-variable "backup_bucket" {
-  description = <<-EOT
-    Bucket UNIQUE des sauvegardes restic, schéma de tenant-infra :
-      <bucket>/<source>/<tenant>-<application>
-    soit alter-it-backups/infra03/le-portail-nextcloud. Un bucket, une
-    application par sous-chemin, les infrastructures séparées d un niveau.
-    Sans expiration S3 : restic gère sa rétention par « forget », et une
-    expiration aveugle corromprait les dépôts.
-  EOT
-  type        = string
-  default     = "alter-it-backups"
-}

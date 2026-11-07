@@ -7,7 +7,7 @@
 #
 #   server.tf   le serveur, sa clé SSH, son pare-feu Hetzner
 #   dns.tf      les noms de staging dans la zone OVH alter-it.eu
-#   s3.tf       le bucket unique des sauvegardes restic, et le compte qui y écrit
+#   (le bucket des sauvegardes restic est dans infrastructure/backups depuis le 7 novembre 2026)
 #
 # Ce qui vit DANS la machine (durcissement, Docker, les piles) est joué par
 # Ansible : ~/work/ansible/playbooks/deploy-vps.yml.
@@ -26,11 +26,6 @@ terraform {
     hcloud = {
       source  = "hetznercloud/hcloud"
       version = "~> 1.49"
-    }
-    # Pointé sur l endpoint S3 d OVH, pas sur AWS (voir s3.tf).
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 5.0"
     }
     # Zone DNS et compte S3 (voir dns.tf, s3.tf).
     ovh = {
@@ -76,25 +71,6 @@ provider "ovh" {
   consumer_key       = var.ovh_dns_consumer_key
 }
 
-provider "aws" {
-  region = var.ovh_s3_region
-
-  endpoints {
-    s3 = "https://s3.${var.ovh_s3_region}.io.cloud.ovh.net"
-  }
-
-  access_key = var.s3_access_key
-  secret_key = var.s3_secret_key
-
-  # OVH n est pas AWS : ces vérifications échouent ou n ont pas de sens.
-  skip_credentials_validation = true
-  skip_metadata_api_check     = true
-  skip_region_validation      = true
-  skip_requesting_account_id  = true
-
-  # OVH attend du path-style, pas du virtual-hosted-style.
-  s3_use_path_style = true
-}
 
 locals {
   name  = "infra03"

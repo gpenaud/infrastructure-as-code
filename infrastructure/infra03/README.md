@@ -33,7 +33,7 @@ et jardins-vedas, derrière le gateway. Il remplace à terme infra01.
 tofu init -backend-config="access_key=$S3_KEY" -backend-config="secret_key=$S3_SECRET"
 tofu plan
 tofu apply
-tofu output                          # ipv4, tenant_domains, backup_bucket
+tofu output                          # ipv4, tenant_domains
 ```
 
 ## 2. Le durcissement et Docker

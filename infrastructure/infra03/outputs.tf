@@ -19,9 +19,6 @@ output "tenant_domains" {
   value       = { for tenant, zone in var.tenants : tenant => "staging.${zone}" }
 }
 
-output "backup_bucket" {
-  value = var.manage_s3 ? module.backup_bucket[0].bucket_names["backups"] : null
-}
 
 output "ansible_inventory_hint" {
   description = "À reporter dans ~/work/ansible/inventories/infra03/hosts.yml."
