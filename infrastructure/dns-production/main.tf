@@ -61,11 +61,12 @@ locals {
   # Les TTL sont ceux trouves le 7 novembre 2026 (0 = defaut de la zone) : les
   # changer est un vrai changement, a faire exprès.
   records = merge(
-    # apex A, partout
-    { for z, t in local.zones : "${z}/apex-A" => { zone = z, sub = "", type = "A", ttl = 0, target = t.ipv4 } },
+    # apex A, partout. TTL : 0 (defaut de zone, 3600) tel qu importe ; 300 avant la
+    # bascule pour qu un changement d apex se propage en cinq minutes (var.apex_ttl).
+    { for z, t in local.zones : "${z}/apex-A" => { zone = z, sub = "", type = "A", ttl = var.apex_ttl[z], target = t.ipv4 } },
     # apex AAAA, la ou il existe (pas chez le-portail ni ferme-du-jointout)
     { for z in ["jardinsvedas.com", "labergeronnette.org", "alter-it.eu"] :
-    "${z}/apex-AAAA" => { zone = z, sub = "", type = "AAAA", ttl = 0, target = local.zones[z].ipv6 } },
+    "${z}/apex-AAAA" => { zone = z, sub = "", type = "AAAA", ttl = var.apex_ttl[z], target = local.zones[z].ipv6 } },
     # « * » vers l apex
     { for z, ttl in { "leportail.org" = 60, "fermedujointout.fr" = 60, "jardinsvedas.com" = 0, "labergeronnette.org" = 60, "alter-it.eu" = 60 } :
     "${z}/star-CNAME" => { zone = z, sub = "*", type = "CNAME", ttl = ttl, target = "${z}." } },
@@ -74,11 +75,18 @@ locals {
     "${z}/www-CNAME" => { zone = z, sub = "www", type = "CNAME", ttl = ttl, target = "${z}." } },
     # le coffre : commun en production, un par tenant apres la migration
     { for z in ["leportail.org", "fermedujointout.fr", "alter-it.eu"] :
-    "${z}/vault-CNAME" => { zone = z, sub = "vault", type = "CNAME", ttl = 300, target = var.vault_target } },
+    "${z}/vault-CNAME" => { zone = z, sub = "vault", type = "CNAME", ttl = 300, target = var.vault_target[z] } },
     # le nom de la machine de production elle-meme
     {
       "alter-it.eu/infra01-A"    = { zone = "alter-it.eu", sub = "infra01", type = "A", ttl = 0, target = var.targets["alter-it.eu"].ipv4 }
       "alter-it.eu/infra01-AAAA" = { zone = "alter-it.eu", sub = "infra01", type = "AAAA", ttl = 0, target = var.targets["alter-it.eu"].ipv6 }
+      # L adresse du coffre commun que connaissent les clients Bitwarden. Reste
+      # ce nom-la apres la migration : le-portail la reprend sur infra03.
+      "alter-it.eu/vault-infra01-CNAME" = { zone = "alter-it.eu", sub = "vault.infra01", type = "CNAME", ttl = 300, target = var.vault_infra01_target }
+      # Les noms de service du nouvel infra01 (Grafana sous grafana.infra01…),
+      # comme *.infra03 dans la racine infra03. Crees pour la phase 5.
+      "alter-it.eu/infra01-wildcard-A"    = { zone = "alter-it.eu", sub = "*.infra01", type = "A", ttl = 300, target = var.targets["alter-it.eu"].ipv4 }
+      "alter-it.eu/infra01-wildcard-AAAA" = { zone = "alter-it.eu", sub = "*.infra01", type = "AAAA", ttl = 300, target = var.targets["alter-it.eu"].ipv6 }
     },
   )
 }
